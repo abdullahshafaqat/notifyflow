@@ -5,7 +5,6 @@ import (
 	"log"
 	"time"
 
-	"github.com/abdullahshafaqat/notifyflow/internal/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -26,7 +25,6 @@ func InitCollections() {
 
 	collection := notificationsCollection()
 
-	// Create index on id field
 	indexModel := mongo.IndexModel{
 		Keys:    bson.D{{Key: "id", Value: 1}},
 		Options: options.Index().SetUnique(true),
@@ -37,29 +35,5 @@ func InitCollections() {
 		log.Fatal("Failed to create index:", err)
 	}
 
-	log.Println("Notifications collection initialized with indexes ✅")
-}
-
-func SaveNotification(n models.Notification) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	_, err := notificationsCollection().InsertOne(ctx, n)
-	return err
-}
-
-func UpdateNotificationStatus(id, status string, retryCount int) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	filter := bson.M{"id": id}
-	update := bson.M{
-		"$set": bson.M{
-			"status":      status,
-			"retry_count": retryCount,
-		},
-	}
-
-	_, err := notificationsCollection().UpdateOne(ctx, filter, update)
-	return err
+	log.Println("Notifications collection initialized with indexes")
 }
