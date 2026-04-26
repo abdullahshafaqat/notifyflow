@@ -2,24 +2,17 @@ package proto
 
 import (
 	context "context"
-
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
 )
 
-// This is a compile-time assertion to ensure that this generated file
-// is compatible with the grpc package it is being compiled against.
-// Requires gRPC-Go v1.64.0 or later.
 const _ = grpc.SupportPackageIsVersion9
 
 const (
 	NotificationService_SendNotification_FullMethodName = "/notification.NotificationService/SendNotification"
 )
 
-// NotificationServiceClient is the client API for NotificationService service.
-//
-// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type NotificationServiceClient interface {
 	SendNotification(ctx context.Context, in *NotificationRequest, opts ...grpc.CallOption) (*NotificationResponse, error)
 }
@@ -42,19 +35,11 @@ func (c *notificationServiceClient) SendNotification(ctx context.Context, in *No
 	return out, nil
 }
 
-// NotificationServiceServer is the server API for NotificationService service.
-// All implementations must embed UnimplementedNotificationServiceServer
-// for forward compatibility.
 type NotificationServiceServer interface {
 	SendNotification(context.Context, *NotificationRequest) (*NotificationResponse, error)
 	mustEmbedUnimplementedNotificationServiceServer()
 }
 
-// UnimplementedNotificationServiceServer must be embedded to have
-// forward compatible implementations.
-//
-// NOTE: this should be embedded by value instead of pointer to avoid a nil
-// pointer dereference when methods are called.
 type UnimplementedNotificationServiceServer struct{}
 
 func (UnimplementedNotificationServiceServer) SendNotification(context.Context, *NotificationRequest) (*NotificationResponse, error) {
@@ -63,18 +48,12 @@ func (UnimplementedNotificationServiceServer) SendNotification(context.Context, 
 func (UnimplementedNotificationServiceServer) mustEmbedUnimplementedNotificationServiceServer() {}
 func (UnimplementedNotificationServiceServer) testEmbeddedByValue()                             {}
 
-// UnsafeNotificationServiceServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to NotificationServiceServer will
-// result in compilation errors.
 type UnsafeNotificationServiceServer interface {
 	mustEmbedUnimplementedNotificationServiceServer()
 }
 
 func RegisterNotificationServiceServer(s grpc.ServiceRegistrar, srv NotificationServiceServer) {
-	// If the following call panics, it indicates UnimplementedNotificationServiceServer was
-	// embedded by pointer and is nil.  This will cause panics if an
-	// unimplemented method is ever invoked, so we test this at initialization
-	// time to prevent it from happening at runtime later due to I/O.
+
 	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
 		t.testEmbeddedByValue()
 	}
@@ -99,9 +78,6 @@ func _NotificationService_SendNotification_Handler(srv interface{}, ctx context.
 	return interceptor(ctx, in, info, handler)
 }
 
-// NotificationService_ServiceDesc is the grpc.ServiceDesc for NotificationService service.
-// It's only intended for direct use with grpc.RegisterService,
-// and not to be introspected or modified (even as a copy)
 var NotificationService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "notification.NotificationService",
 	HandlerType: (*NotificationServiceServer)(nil),

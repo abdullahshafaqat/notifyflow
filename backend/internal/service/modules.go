@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/abdullahshafaqat/notifyflow/internal/db"
+	"github.com/abdullahshafaqat/notifyflow/internal/grpcclient"
 	"github.com/abdullahshafaqat/notifyflow/internal/models"
 )
 
@@ -19,13 +20,13 @@ type Service interface {
 
 type serviceImpl struct {
 	database db.DB
-	queue    chan models.Notification
+	grpc     *grpcclient.Client
 }
 
-func NewService(database db.DB, queue chan models.Notification) Service {
-	return &serviceImpl{database: database, queue: queue}
+func NewService(database db.DB, grpc *grpcclient.Client) Service {
+	return &serviceImpl{database: database, grpc: grpc}
 }
 
-func InitService(database db.DB, queue chan models.Notification) Service {
-	return NewService(database, queue)
+func InitService(database db.DB, grpc *grpcclient.Client) Service {
+	return NewService(database, grpc)
 }

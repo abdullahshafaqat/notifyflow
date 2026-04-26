@@ -1,17 +1,14 @@
 package main
 
 import (
-	"context"
 	"log"
 	"net/http"
-	"time"
 
 	"github.com/abdullahshafaqat/notifyflow/internal/api"
 	"github.com/abdullahshafaqat/notifyflow/internal/config"
 	"github.com/abdullahshafaqat/notifyflow/internal/db"
-	"github.com/abdullahshafaqat/notifyflow/internal/models"
+	"github.com/abdullahshafaqat/notifyflow/internal/grpcclient"
 	"github.com/abdullahshafaqat/notifyflow/internal/service"
-	"github.com/abdullahshafaqat/notifyflow/internal/worker"
 	"github.com/joho/godotenv"
 )
 
@@ -22,8 +19,7 @@ func main() {
 	config.LoadConfig()
 	db.ConnectMongo()
 
-	handler, workerManager := buildDependencies()
-	workerManager.Start(context.Background())
+	handler := buildDependencies()
 
 	mux := http.NewServeMux()
 	router := api.NewRouter(handler)
@@ -34,20 +30,14 @@ func main() {
 	log.Fatal(http.ListenAndServe(addr, mux))
 }
 
-func buildDependencies() (*api.NotificationHandler, *worker.Manager) {
+func buildDependencies() *api.NotificationHandler {
 	database := db.InitDB(db.Client, databaseName)
-	queue := make(chan models.Notification, config.AppConfig.QueueBuffer)
-	notificationService := service.InitService(database, queue)
+	grpc, err := grpcclient.NewClient()
+	if err != nil {
+		log.Fatalf("failed to connect to gRPC worker: %v", err)
+	}
+
+	notificationService := service.InitService(database, grpc)
 	notificationHandler, _ := api.InitAPI(notificationService)
-
-	workerManager := worker.InitWorker(
-		notificationService,
-		queue,
-		config.AppConfig.WorkerCount,
-		config.AppConfig.MaxRetries,
-		time.Duration(config.AppConfig.ProcessingDelayMS)*time.Millisecond,
-		time.Duration(config.AppConfig.RetryBackoffMS)*time.Millisecond,
-	)
-
-	return notificationHandler, workerManager
+	return notificationHandler
 }

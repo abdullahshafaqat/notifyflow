@@ -1,28 +1,22 @@
-# Environment files
 .env
 .env.local
 .env.*.local
 
-# Go binaries
 *.exe
 *.dll
 *.so
 *.dylib
 bin/
 
-# Go build directories
 dist/
 
-# IDE
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
 
-# OS
 .DS_Store
 Thumbs.db
 
-# Dependencies
 vendor/

@@ -21,37 +21,32 @@ type server struct {
 func (s *server) SendNotification(ctx context.Context, req *pb.NotificationRequest) (*pb.NotificationResponse, error) {
 	log.Println("Received job:", req.Id)
 
-	// convert proto → model
 	n := service.ConvertToModel(req)
 
-	// process using existing logic
 	err := s.svc.Process(ctx, n)
 
 	if err != nil {
 		log.Printf("Job %s failed: %v\n", req.Id, err)
 		return &pb.NotificationResponse{
-			Status: "failed",
+			Status: pb.Status_FAILED,
 		}, nil
 	}
 
 	log.Printf("Job %s completed successfully\n", req.Id)
 	return &pb.NotificationResponse{
-		Status: "success",
+		Status: pb.Status_SUCCESS,
 	}, nil
 }
 
 func main() {
-	// Load config
+
 	config.LoadConfig()
 
-	// connect DB
 	db.ConnectMongo()
 
-	// init repo + service
 	database := db.InitDB(db.Client, "notifyflow")
 	svc := service.NewNotificationService(database)
 
-	// start gRPC server
 	lis, err := net.Listen("tcp", ":50051")
 	if err != nil {
 		log.Fatal(err)

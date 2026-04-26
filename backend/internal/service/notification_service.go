@@ -22,14 +22,7 @@ func NewNotificationService(repo db.DB) NotificationService {
 }
 
 func (s *notificationServiceImpl) Process(ctx context.Context, n models.Notification) error {
-	// Save notification as pending
-	n.Status = "pending"
-	n.Retry = 0
-	if err := s.repo.Save(ctx, n); err != nil {
-		return err
-	}
 
-	// Process with retry logic (max 3 retries)
 	maxRetries := 3
 	retryBackoff := 25 * time.Millisecond
 	processingDelay := 10 * time.Millisecond
@@ -37,16 +30,15 @@ func (s *notificationServiceImpl) Process(ctx context.Context, n models.Notifica
 	for attempt := 1; attempt <= maxRetries; attempt++ {
 		err := s.processNotification(ctx, n, processingDelay)
 		if err == nil {
-			// Success
+
 			return s.repo.UpdateStatus(ctx, n.ID, "success", attempt)
 		}
 
 		if attempt == maxRetries {
-			// Failed after all retries
+
 			return s.repo.UpdateStatus(ctx, n.ID, "failed", maxRetries)
 		}
 
-		// Retry
 		s.repo.UpdateStatus(ctx, n.ID, "retrying", attempt)
 		time.Sleep(retryBackoff)
 	}
