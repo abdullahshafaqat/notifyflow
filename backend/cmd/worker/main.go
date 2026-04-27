@@ -7,8 +7,10 @@ import (
 
 	"github.com/abdullahshafaqat/notifyflow/internal/config"
 	"github.com/abdullahshafaqat/notifyflow/internal/db"
+	"github.com/abdullahshafaqat/notifyflow/internal/email"
 	"github.com/abdullahshafaqat/notifyflow/internal/service"
 	pb "github.com/abdullahshafaqat/notifyflow/proto"
+	"github.com/joho/godotenv"
 
 	"google.golang.org/grpc"
 )
@@ -39,13 +41,22 @@ func (s *server) SendNotification(ctx context.Context, req *pb.NotificationReque
 }
 
 func main() {
+	_ = godotenv.Load()
 
 	config.LoadConfig()
 
 	db.ConnectMongo()
 
 	database := db.InitDB(db.Client, "notifyflow")
-	svc := service.NewNotificationService(database)
+	sender, err := email.NewResendSender(
+		config.AppConfig.ResendAPIKey,
+		config.AppConfig.EmailFrom,
+	)
+	if err != nil {
+		log.Fatalf("failed to initialize Resend sender: %v", err)
+	}
+
+	svc := service.NewNotificationService(database, sender)
 
 	lis, err := net.Listen("tcp", ":50051")
 	if err != nil {

@@ -15,6 +15,8 @@ type Config struct {
 	ProcessingDelayMS int
 	RetryBackoffMS    int
 	MaxRetries        int
+	ResendAPIKey      string
+	EmailFrom         string
 }
 
 var AppConfig *Config
@@ -28,6 +30,8 @@ func LoadConfig() {
 	processingDelayMS := getEnvInt("PROCESSING_DELAY_MS", 10)
 	retryBackoffMS := getEnvInt("RETRY_BACKOFF_MS", 50)
 	maxRetries := getEnvInt("MAX_RETRIES", 3)
+	resendAPIKey := getEnv("RESEND_API_KEY", "")
+	emailFrom := getEnv("EMAIL_FROM", "")
 
 	AppConfig = &Config{
 		MongoURI:          mongoURI,
@@ -38,6 +42,8 @@ func LoadConfig() {
 		ProcessingDelayMS: processingDelayMS,
 		RetryBackoffMS:    retryBackoffMS,
 		MaxRetries:        maxRetries,
+		ResendAPIKey:      resendAPIKey,
+		EmailFrom:         emailFrom,
 	}
 
 	log.Printf("Config loaded - Env: %s, Port: %s, Mongo: %s, Workers: %d, Queue: %d, DelayMS: %d, RetryBackoffMS: %d, MaxRetries: %d\n",

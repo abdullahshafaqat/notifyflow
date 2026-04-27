@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/abdullahshafaqat/notifyflow/internal/db"
+	"github.com/abdullahshafaqat/notifyflow/internal/email"
 	"github.com/abdullahshafaqat/notifyflow/internal/models"
 )
 
@@ -14,11 +15,12 @@ type NotificationService interface {
 }
 
 type notificationServiceImpl struct {
-	repo db.DB
+	repo   db.DB
+	sender email.Sender
 }
 
-func NewNotificationService(repo db.DB) NotificationService {
-	return &notificationServiceImpl{repo: repo}
+func NewNotificationService(repo db.DB, sender email.Sender) NotificationService {
+	return &notificationServiceImpl{repo: repo, sender: sender}
 }
 
 func (s *notificationServiceImpl) Process(ctx context.Context, n models.Notification) error {
@@ -55,8 +57,13 @@ func (s *notificationServiceImpl) processNotification(ctx context.Context, n mod
 		}
 	}
 
-	if n.To == "fail@test.com" {
-		return fmt.Errorf("simulated failure")
+	if s.sender == nil {
+		return fmt.Errorf("email sender is not initialized")
+	}
+
+	err := s.sender.Send(ctx, n.To, "NotifyFlow Notification", n.Message)
+	if err != nil {
+		return err
 	}
 
 	return nil
