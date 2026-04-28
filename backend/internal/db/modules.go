@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"time"
 
 	"github.com/abdullahshafaqat/notifyflow/internal/models"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -13,6 +14,7 @@ type NotificationStore interface {
 	GetAll(ctx context.Context) ([]models.Notification, error)
 	GetByID(ctx context.Context, id string) (models.Notification, error)
 	GetFailed(ctx context.Context) ([]models.Notification, error)
+	GetScheduledDue(ctx context.Context, now time.Time) ([]models.Notification, error)
 }
 
 type DB interface {
@@ -21,6 +23,7 @@ type DB interface {
 	GetAll(ctx context.Context) ([]models.Notification, error)
 	GetByID(ctx context.Context, id string) (models.Notification, error)
 	GetFailed(ctx context.Context) ([]models.Notification, error)
+	GetScheduledDue(ctx context.Context, now time.Time) ([]models.Notification, error)
 }
 
 type dbImpl struct {

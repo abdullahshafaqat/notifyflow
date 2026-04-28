@@ -1,13 +1,16 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/abdullahshafaqat/notifyflow/internal/api"
 	"github.com/abdullahshafaqat/notifyflow/internal/config"
 	"github.com/abdullahshafaqat/notifyflow/internal/db"
 	"github.com/abdullahshafaqat/notifyflow/internal/grpcclient"
+	"github.com/abdullahshafaqat/notifyflow/internal/scheduler"
 	"github.com/abdullahshafaqat/notifyflow/internal/service"
 	"github.com/joho/godotenv"
 )
@@ -19,7 +22,8 @@ func main() {
 	config.LoadConfig()
 	db.ConnectMongo()
 
-	handler := buildDependencies()
+	handler, jobScheduler := buildDependencies()
+	go jobScheduler.Start(context.Background())
 
 	mux := http.NewServeMux()
 	router := api.NewRouter(handler)
@@ -30,7 +34,7 @@ func main() {
 	log.Fatal(http.ListenAndServe(addr, mux))
 }
 
-func buildDependencies() *api.NotificationHandler {
+func buildDependencies() (*api.NotificationHandler, *scheduler.Scheduler) {
 	database := db.InitDB(db.Client, databaseName)
 	grpc, err := grpcclient.NewClient()
 	if err != nil {
@@ -39,5 +43,6 @@ func buildDependencies() *api.NotificationHandler {
 
 	notificationService := service.InitService(database, grpc)
 	notificationHandler, _ := api.InitAPI(notificationService)
-	return notificationHandler
+	jobScheduler := scheduler.NewScheduler(database, grpc, 5*time.Second)
+	return notificationHandler, jobScheduler
 }

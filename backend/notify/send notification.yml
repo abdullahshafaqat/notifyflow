@@ -8,7 +8,7 @@ http:
   url: http://localhost:8080/send
   body:
     type: json
-    data: '{"to":"test@gmail.com","message":"hello"}'
+    data: '{"to":"abdullahshafaqat14@gmail.com","message":"hello"}'
   auth: inherit
 
 settings:

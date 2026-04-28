@@ -21,10 +21,16 @@ func (h *NotificationHandler) SendNotification(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	if err := h.service.Send(r.Context(), notif); err != nil {
+	id, status, err := h.service.Send(r.Context(), notif)
+	if err != nil {
 		writeError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	writeJSON(w, http.StatusOK, models.Response{Status: "success", Message: "Notification sent successfully"})
+	message := "Notification sent successfully"
+	if status == "scheduled" {
+		message = "Notification scheduled successfully"
+	}
+
+	writeJSON(w, http.StatusOK, models.Response{ID: id, Status: status, Message: message})
 }

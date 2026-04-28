@@ -10,7 +10,7 @@ import (
 )
 
 type Service interface {
-	Send(ctx context.Context, n models.Notification) error
+	Send(ctx context.Context, n models.Notification) (string, string, error)
 	GetAll(ctx context.Context) ([]models.Notification, error)
 	GetByID(ctx context.Context, id string) (models.Notification, error)
 	GetFailed(ctx context.Context) ([]models.Notification, error)

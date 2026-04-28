@@ -28,17 +28,21 @@ func (s *notificationServiceImpl) Process(ctx context.Context, n models.Notifica
 	maxRetries := 3
 	retryBackoff := 25 * time.Millisecond
 	processingDelay := 10 * time.Millisecond
+	var lastErr error
 
 	for attempt := 1; attempt <= maxRetries; attempt++ {
 		err := s.processNotification(ctx, n, processingDelay)
 		if err == nil {
 
-			return s.repo.UpdateStatus(ctx, n.ID, "success", attempt)
+			return s.repo.UpdateStatus(ctx, n.ID, "sent", attempt)
 		}
+		lastErr = err
 
 		if attempt == maxRetries {
-
-			return s.repo.UpdateStatus(ctx, n.ID, "failed", maxRetries)
+			if statusErr := s.repo.UpdateStatus(ctx, n.ID, "failed", maxRetries); statusErr != nil {
+				return fmt.Errorf("notification send failed: %v; additionally failed to update status: %w", lastErr, statusErr)
+			}
+			return fmt.Errorf("notification send failed after %d retries: %w", maxRetries, lastErr)
 		}
 
 		s.repo.UpdateStatus(ctx, n.ID, "retrying", attempt)
