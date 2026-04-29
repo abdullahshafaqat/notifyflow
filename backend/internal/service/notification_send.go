@@ -41,11 +41,13 @@ func (s *serviceImpl) Send(ctx context.Context, n models.Notification) (string, 
 	status, err := s.grpc.Send(ctx, n.ID, n.To, n.Message)
 	if err != nil {
 		_ = s.database.UpdateStatus(ctx, n.ID, "failed", n.Retry)
+		_ = s.database.SetLastError(ctx, n.ID, err.Error())
 		return n.ID, "", fmt.Errorf("failed to send notification to worker: %w", err)
 	}
 
 	if status != pb.Status_SUCCESS {
 		_ = s.database.UpdateStatus(ctx, n.ID, "failed", n.Retry)
+		_ = s.database.SetLastError(ctx, n.ID, status.String())
 		return n.ID, "", fmt.Errorf("worker returned non-success status: %s", status.String())
 	}
 

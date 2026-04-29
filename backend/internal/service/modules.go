@@ -15,6 +15,7 @@ type Service interface {
 	GetByID(ctx context.Context, id string) (models.Notification, error)
 	GetFailed(ctx context.Context) ([]models.Notification, error)
 	UpdateStatus(ctx context.Context, id, status string, retry int) error
+	SetLastError(ctx context.Context, id string, lastError string) error
 	ProcessNotification(ctx context.Context, n models.Notification, processingDelay time.Duration) error
 }
 
@@ -29,4 +30,8 @@ func NewService(database db.DB, grpc *grpcclient.Client) Service {
 
 func InitService(database db.DB, grpc *grpcclient.Client) Service {
 	return NewService(database, grpc)
+}
+
+func (s *serviceImpl) SetLastError(ctx context.Context, id string, lastError string) error {
+	return s.database.SetLastError(ctx, id, lastError)
 }

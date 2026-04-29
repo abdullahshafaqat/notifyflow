@@ -16,5 +16,8 @@ func (s *dbImpl) GetFailed(ctx context.Context) ([]models.Notification, error) {
 
 	var results []models.Notification
 	err = cursor.All(ctx, &results)
+	if results == nil {
+		results = make([]models.Notification, 0)
+	}
 	return results, err
 }

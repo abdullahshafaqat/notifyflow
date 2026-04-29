@@ -79,6 +79,7 @@ func (m *Manager) processJob(ctx context.Context, workerID int, job models.Notif
 
 		if attempt == m.maxRetries {
 			_ = m.service.UpdateStatus(ctx, job.ID, "failed", m.maxRetries)
+			_ = m.service.SetLastError(ctx, job.ID, err.Error())
 			log.Printf("worker=%d job=%s state=failed attempts=%d", workerID, job.ID, m.maxRetries)
 			return
 		}

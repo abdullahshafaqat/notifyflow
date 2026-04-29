@@ -21,7 +21,7 @@ type server struct {
 }
 
 func (s *server) SendNotification(ctx context.Context, req *pb.NotificationRequest) (*pb.NotificationResponse, error) {
-	log.Println("Received job:", req.Id)
+	// received job - verbose, removed
 
 	n := service.ConvertToModel(req)
 
@@ -34,7 +34,7 @@ func (s *server) SendNotification(ctx context.Context, req *pb.NotificationReque
 		}, nil
 	}
 
-	log.Printf("Job %s completed successfully\n", req.Id)
+	
 	return &pb.NotificationResponse{
 		Status: pb.Status_SUCCESS,
 	}, nil

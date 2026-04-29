@@ -42,6 +42,7 @@ func (s *notificationServiceImpl) Process(ctx context.Context, n models.Notifica
 			if statusErr := s.repo.UpdateStatus(ctx, n.ID, "failed", maxRetries); statusErr != nil {
 				return fmt.Errorf("notification send failed: %v; additionally failed to update status: %w", lastErr, statusErr)
 			}
+			_ = s.repo.SetLastError(ctx, n.ID, lastErr.Error())
 			return fmt.Errorf("notification send failed after %d retries: %w", maxRetries, lastErr)
 		}
 

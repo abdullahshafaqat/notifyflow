@@ -35,5 +35,5 @@ func InitCollections() {
 		log.Fatal("Failed to create index:", err)
 	}
 
-	log.Println("Notifications collection initialized with indexes")
+	// index initialization complete
 }

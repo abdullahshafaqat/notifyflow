@@ -27,7 +27,7 @@ func ConnectMongo() {
 	}
 
 	Client = client
-	log.Println("MongoDB connected successfully")
+	// MongoDB connected
 
 	InitCollections()
 }

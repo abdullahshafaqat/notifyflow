@@ -31,7 +31,7 @@ func main() {
 
 	addr := ":" + config.AppConfig.ServerPort
 	log.Printf("Server running on http://localhost%s", addr)
-	log.Fatal(http.ListenAndServe(addr, mux))
+	log.Fatal(http.ListenAndServe(addr, corsMiddleware(mux)))
 }
 
 func buildDependencies() (*api.NotificationHandler, *scheduler.Scheduler) {
@@ -43,6 +43,28 @@ func buildDependencies() (*api.NotificationHandler, *scheduler.Scheduler) {
 
 	notificationService := service.InitService(database, grpc)
 	notificationHandler, _ := api.InitAPI(notificationService)
-	jobScheduler := scheduler.NewScheduler(database, grpc, 5*time.Second)
+	jobScheduler := scheduler.NewScheduler(
+		database,
+		grpc,
+		5*time.Second,
+		config.AppConfig.MaxRetries,
+		time.Duration(config.AppConfig.RetryBackoffMS)*time.Millisecond,
+	)
 	return notificationHandler, jobScheduler
+}
+
+func corsMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+		w.Header().Set("Access-Control-Max-Age", "86400")
+
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
 }

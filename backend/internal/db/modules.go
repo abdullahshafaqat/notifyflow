@@ -15,6 +15,7 @@ type NotificationStore interface {
 	GetByID(ctx context.Context, id string) (models.Notification, error)
 	GetFailed(ctx context.Context) ([]models.Notification, error)
 	GetScheduledDue(ctx context.Context, now time.Time) ([]models.Notification, error)
+	SetLastError(ctx context.Context, id string, lastError string) error
 }
 
 type DB interface {
@@ -24,6 +25,7 @@ type DB interface {
 	GetByID(ctx context.Context, id string) (models.Notification, error)
 	GetFailed(ctx context.Context) ([]models.Notification, error)
 	GetScheduledDue(ctx context.Context, now time.Time) ([]models.Notification, error)
+	SetLastError(ctx context.Context, id string, lastError string) error
 }
 
 type dbImpl struct {
